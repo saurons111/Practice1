@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}{% if order %}Редактирование{% else %}Добавление{% endif %} заказа - ООО "Обувь"{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .form-container h2 {
+        margin-bottom: 30px;
+        color: #333;
+    }
+    
+    .form-row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+    }
+    
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 14px;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: {{ colors.accent }};
+    }
+    
+    .actions {
+        margin-top: 30px;
+        display: flex;
+        gap: 15px;
+    }
+    
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #666;
+        text-decoration: none;
+    }
+    
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <a href="{{ url_for('orders') }}" class="back-link">← Назад к списку заказов</a>
+    
+    <h2>{% if order %}Редактирование заказа{% else %}Добавление нового заказа{% endif %}</h2>
+    
+    <form method="POST">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="order_number">Номер заказа *</label>
+                <input type="number" id="order_number" name="order_number" 
+                       value="{% if order %}{{ order.order_number }}{% else %}{{ form_data.order_number if form_data else '' }}{% endif %}"
+                       required>
+            </div>
+            <div class="form-group">
+                <label for="user_id">Клиент *</label>
+                <select id="user_id" name="user_id" required>
+                    <option value="">Выберите клиента</option>
+                    {% for user in users %}
+                    <option value="{{ user.id }}"
+                        {% if order and order.user_id == user.id %}selected{% endif %}
+                        {% if form_data and form_data.user_id == user.id|string %}selected{% endif %}>
+                        {{ user.full_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="pickup_point_id">Пункт выдачи *</label>
+                <select id="pickup_point_id" name="pickup_point_id" required>
+                    <option value="">Выберите пункт выдачи</option>
+                    {% for point in pickup_points %}
+                    <option value="{{ point.id }}"
+                        {% if order and order.pickup_point_id == point.id %}selected{% endif %}
+                        {% if form_data and form_data.pickup_point_id == point.id|string %}selected{% endif %}>
+                        {{ point.address }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="status_id">Статус заказа *</label>
+                <select id="status_id" name="status_id" required>
+                    <option value="">Выберите статус</option>
+                    {% for status in statuses %}
+                    <option value="{{ status.id }}"
+                        {% if order and order.status_id == status.id %}selected{% endif %}
+                        {% if form_data and form_data.status_id == status.id|string %}selected{% endif %}>
+                        {{ status.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="order_date">Дата заказа *</label>
+                <input type="date" id="order_date" name="order_date" 
+                       value="{% if order %}{{ order.order_date }}{% else %}{{ form_data.order_date if form_data else '' }}{% endif %}"
+                       required>
+            </div>
+            <div class="form-group">
+                <label for="delivery_date">Дата доставки</label>
+                <input type="date" id="delivery_date" name="delivery_date" 
+                       value="{% if order %}{{ order.delivery_date or '' }}{% else %}{{ form_data.delivery_date if form_data else '' }}{% endif %}">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="code">Код для получения *</label>
+                <input type="text" id="code" name="code" 
+                       value="{% if order %}{{ order.code }}{% else %}{{ form_data.code if form_data else '' }}{% endif %}"
+                       required>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button type="submit" class="btn btn-primary">
+                {% if order %}Сохранить изменения{% else %}Добавить заказ{% endif %}
+            </button>
+            <a href="{{ url_for('orders') }}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

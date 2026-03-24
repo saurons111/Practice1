@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - ООО "Обувь"{% endblock %}
+
+{% block extra_css %}
+<style>
+    .product-detail {
+        display: flex;
+        gap: 30px;
+        margin-top: 20px;
+    }
+    
+    .product-image-container {
+        flex: 0 0 400px;
+    }
+    
+    .product-image-container img {
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .product-info {
+        flex: 1;
+    }
+    
+    .product-info h2 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+    
+    .info-row {
+        display: flex;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .info-label {
+        flex: 0 0 200px;
+        font-weight: bold;
+        color: #666;
+    }
+    
+    .info-value {
+        flex: 1;
+        color: #333;
+    }
+    
+    .price-section {
+        margin-top: 20px;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 10px;
+    }
+    
+    .price-original {
+        font-size: 20px;
+        text-decoration: line-through;
+        color: red;
+    }
+    
+    .price-final {
+        font-size: 28px;
+        font-weight: bold;
+        color: black;
+    }
+    
+    .discount-badge {
+        display: inline-block;
+        background-color: #ff6b6b;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 16px;
+        margin-left: 10px;
+    }
+    
+    .actions {
+        margin-top: 30px;
+        display: flex;
+        gap: 15px;
+    }
+    
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #666;
+        text-decoration: none;
+    }
+    
+    .back-link:hover {
+        text-decoration: underline;
+    }
+    
+    .stock-status {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+    }
+    
+    .stock-status.in-stock {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .stock-status.out-of-stock {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('products') }}" class="back-link">← Назад к списку товаров</a>
+
+<div class="product-detail">
+    <div class="product-image-container">
+        <img src="{{ url_for('static', filename='images/' + product.photo) }}" 
+             alt="{{ product.name }}"
+             onerror="this.src='{{ url_for('static', filename='images/picture.png') }}'">
+    </div>
+    
+    <div class="product-info">
+        <h2>{{ product.name }}</h2>
+        
+        <div class="info-row">
+            <div class="info-label">Артикул:</div>
+            <div class="info-value">{{ product.article }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Категория:</div>
+            <div class="info-value">{{ product.category_name }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Производитель:</div>
+            <div class="info-value">{{ product.manufacturer_name }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Поставщик:</div>
+            <div class="info-value">{{ product.supplier_name }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Единица измерения:</div>
+            <div class="info-value">{{ product.unit }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Наличие на складе:</div>
+            <div class="info-value">
+                {% if product.quantity > 0 %}
+                    <span class="stock-status in-stock">{{ product.quantity }} шт.</span>
+                {% else %}
+                    <span class="stock-status out-of-stock">Нет в наличии</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Описание:</div>
+            <div class="info-value">{{ product.description or 'Описание отсутствует' }}</div>
+        </div>
+        
+        <div class="price-section">
+            {% if product.discount > 0 %}
+                <div class="price-original">{{ "%.2f"|format(product.price) }} ₽</div>
+                <div class="price-final">
+                    {{ "%.2f"|format(product.price * (100 - product.discount) / 100) }} ₽
+                    <span class="discount-badge">Скидка {{ product.discount }}%</span>
+                </div>
+            {% else %}
+                <div class="price-final">{{ "%.2f"|format(product.price) }} ₽</div>
+            {% endif %}
+        </div>
+        
+        <div class="actions">
+            <a href="{{ url_for('products') }}" class="btn btn-secondary">Назад</a>
+            {% if user_role == 'Администратор' %}
+            <a href="{{ url_for('edit_product', product_id=product.id) }}" class="btn btn-primary">Редактировать</a>
+            <form method="POST" action="{{ url_for('delete_product', product_id=product.id) }}" style="display: inline;"
+                  onsubmit="return confirm('Вы уверены, что хотите удалить этот товар?');">
+                <button type="submit" class="btn btn-danger">Удалить</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

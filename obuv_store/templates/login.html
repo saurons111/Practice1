@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Вход - ООО "Обувь"{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-container {
+        max-width: 400px;
+        margin: 50px auto;
+        padding: 40px;
+        background-color: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .login-container h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+    }
+    
+    .login-container .logo {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .login-container .logo img {
+        max-width: 100px;
+    }
+    
+    .login-container .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .login-container label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+    }
+    
+    .login-container input[type="text"],
+    .login-container input[type="password"] {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        font-family: 'Times New Roman', Times, serif;
+    }
+    
+    .login-container input[type="text"]:focus,
+    .login-container input[type="password"]:focus {
+        outline: none;
+        border-color: {{ colors.accent }};
+    }
+    
+    .login-container .btn-login {
+        width: 100%;
+        padding: 12px;
+        background-color: {{ colors.accent }};
+        color: #333;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        font-family: 'Times New Roman', Times, serif;
+    }
+    
+    .login-container .btn-login:hover {
+        background-color: #00d4a0;
+    }
+    
+    .login-container .guest-link {
+        text-align: center;
+        margin-top: 20px;
+    }
+    
+    .login-container .guest-link a {
+        color: #666;
+        text-decoration: none;
+    }
+    
+    .login-container .guest-link a:hover {
+        text-decoration: underline;
+    }
+    
+    .divider {
+        text-align: center;
+        margin: 20px 0;
+        position: relative;
+    }
+    
+    .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background-color: #ddd;
+    }
+    
+    .divider span {
+        background-color: #f9f9f9;
+        padding: 0 15px;
+        position: relative;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="logo">
+        <img src="{{ url_for('static', filename='images/Icon.png') }}" alt="Логотип">
+    </div>
+    <h2>Авторизация</h2>
+    
+    <form method="POST" action="{{ url_for('login') }}">
+        <div class="form-group">
+            <label for="login">Логин</label>
+            <input type="text" id="login" name="login" required placeholder="Введите логин">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Пароль</label>
+            <input type="password" id="password" name="password" required placeholder="Введите пароль">
+        </div>
+        
+        <button type="submit" class="btn-login">Войти</button>
+    </form>
+    
+    <div class="divider">
+        <span>или</span>
+    </div>
+    
+    <div class="guest-link">
+        <a href="{{ url_for('guest') }}">Войти как гость</a>
+    </div>
+</div>
+{% endblock %}

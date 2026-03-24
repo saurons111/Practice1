@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}{% if product %}Редактирование{% else %}Добавление{% endif %} товара - ООО "Обувь"{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .form-container h2 {
+        margin-bottom: 30px;
+        color: #333;
+    }
+    
+    .form-row {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 14px;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: {{ colors.accent }};
+    }
+    
+    .form-group textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+    
+    .form-group input[readonly] {
+        background-color: #f5f5f5;
+        cursor: not-allowed;
+    }
+    
+    .photo-preview {
+        margin-top: 10px;
+    }
+    
+    .photo-preview img {
+        max-width: 300px;
+        max-height: 200px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+    }
+    
+    .actions {
+        margin-top: 30px;
+        display: flex;
+        gap: 15px;
+    }
+    
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #666;
+        text-decoration: none;
+    }
+    
+    .back-link:hover {
+        text-decoration: underline;
+    }
+    
+    .help-text {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <a href="{{ url_for('products') }}" class="back-link">← Назад к списку товаров</a>
+    
+    <h2>{% if product %}Редактирование товара{% else %}Добавление нового товара{% endif %}</h2>
+    
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="article">Артикул {% if product %}(только для чтения){% endif %}</label>
+                <input type="text" id="article" name="article" 
+                       value="{% if product %}{{ product.article }}{% else %}{{ form_data.article if form_data else '' }}{% endif %}"
+                       {% if product %}readonly{% else %}required{% endif %}>
+            </div>
+            <div class="form-group">
+                <label for="name">Наименование товара *</label>
+                <input type="text" id="name" name="name" 
+                       value="{% if product %}{{ product.name }}{% else %}{{ form_data.name if form_data else '' }}{% endif %}"
+                       required>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="category_id">Категория *</label>
+                <select id="category_id" name="category_id" required>
+                    <option value="">Выберите категорию</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" 
+                        {% if product and product.category_id == category.id %}selected{% endif %}
+                        {% if form_data and form_data.category_id == category.id|string %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="manufacturer_id">Производитель *</label>
+                <select id="manufacturer_id" name="manufacturer_id" required>
+                    <option value="">Выберите производителя</option>
+                    {% for manufacturer in manufacturers %}
+                    <option value="{{ manufacturer.id }}"
+                        {% if product and product.manufacturer_id == manufacturer.id %}selected{% endif %}
+                        {% if form_data and form_data.manufacturer_id == manufacturer.id|string %}selected{% endif %}>
+                        {{ manufacturer.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="supplier_id">Поставщик *</label>
+                <select id="supplier_id" name="supplier_id" required>
+                    <option value="">Выберите поставщика</option>
+                    {% for supplier in suppliers %}
+                    <option value="{{ supplier.id }}"
+                        {% if product and product.supplier_id == supplier.id %}selected{% endif %}
+                        {% if form_data and form_data.supplier_id == supplier.id|string %}selected{% endif %}>
+                        {{ supplier.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="unit">Единица измерения *</label>
+                <input type="text" id="unit" name="unit" 
+                       value="{% if product %}{{ product.unit }}{% else %}{{ form_data.unit if form_data else 'шт.' }}{% endif %}"
+                       required>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="price">Цена (₽) *</label>
+                <input type="number" id="price" name="price" step="0.01" min="0"
+                       value="{% if product %}{{ product.price }}{% else %}{{ form_data.price if form_data else '' }}{% endif %}"
+                       required>
+                <div class="help-text">Цена не может быть отрицательной</div>
+            </div>
+            <div class="form-group">
+                <label for="discount">Действующая скидка (%)</label>
+                <input type="number" id="discount" name="discount" min="0" max="100"
+                       value="{% if product %}{{ product.discount }}{% else %}{{ form_data.discount if form_data else '0' }}{% endif %}">
+                <div class="help-text">Скидка от 0 до 100%</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="quantity">Количество на складе *</label>
+                <input type="number" id="quantity" name="quantity" min="0"
+                       value="{% if product %}{{ product.quantity }}{% else %}{{ form_data.quantity if form_data else '0' }}{% endif %}"
+                       required>
+                <div class="help-text">Количество не может быть отрицательным</div>
+            </div>
+            <div class="form-group">
+                <label for="photo">Фото товара</label>
+                <input type="file" id="photo" name="photo" accept="image/*">
+                <div class="help-text">Рекомендуемый размер: 300x200 пикселей. Максимальный размер файла: 16MB</div>
+                
+                {% if product and product.photo %}
+                <div class="photo-preview">
+                    <p>Текущее фото:</p>
+                    <img src="{{ url_for('static', filename='images/' + product.photo) }}" 
+                         alt="{{ product.name }}"
+                         onerror="this.src='{{ url_for('static', filename='images/picture.png') }}'">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Описание товара</label>
+            <textarea id="description" name="description">{% if product %}{{ product.description or '' }}{% else %}{{ form_data.description if form_data else '' }}{% endif %}</textarea>
+        </div>
+        
+        <div class="actions">
+            <button type="submit" class="btn btn-primary">
+                {% if product %}Сохранить изменения{% else %}Добавить товар{% endif %}
+            </button>
+            <a href="{{ url_for('products') }}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

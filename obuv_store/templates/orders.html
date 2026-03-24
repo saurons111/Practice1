@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Заказы - ООО "Обувь"{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .page-header h2 {
+        color: #333;
+    }
+    
+    .orders-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .orders-table th,
+    .orders-table td {
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+    
+    .orders-table th {
+        background-color: {{ colors.secondary_bg }};
+        font-weight: bold;
+    }
+    
+    .orders-table tr:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .status-new {
+        background-color: #fff3cd;
+        color: #856404;
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+    }
+    
+    .status-completed {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+    }
+    
+    .actions {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .actions .btn {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Список заказов</h2>
+    {% if user_role == 'Администратор' %}
+    <a href="{{ url_for('add_order') }}" class="btn btn-primary">Добавить заказ</a>
+    {% endif %}
+</div>
+
+<table class="orders-table">
+    <thead>
+        <tr>
+            <th>Номер заказа</th>
+            <th>Клиент</th>
+            <th>Дата заказа</th>
+            <th>Дата доставки</th>
+            <th>Пункт выдачи</th>
+            <th>Код получения</th>
+            <th>Статус</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>{{ order.order_number }}</td>
+            <td>{{ order.user_name }}</td>
+            <td>{{ order.order_date }}</td>
+            <td>{{ order.delivery_date or '-' }}</td>
+            <td>{{ order.pickup_address }}</td>
+            <td>{{ order.code }}</td>
+            <td>
+                {% if order.status_name == 'Новый' %}
+                    <span class="status-new">{{ order.status_name }}</span>
+                {% else %}
+                    <span class="status-completed">{{ order.status_name }}</span>
+                {% endif %}
+            </td>
+            <td class="actions">
+                <a href="{{ url_for('order_detail', order_id=order.id) }}" class="btn btn-secondary">Просмотр</a>
+                {% if user_role == 'Администратор' %}
+                <a href="{{ url_for('edit_order', order_id=order.id) }}" class="btn btn-primary">Редактировать</a>
+                <form method="POST" action="{{ url_for('delete_order', order_id=order.id) }}" style="display: inline;"
+                      onsubmit="return confirm('Вы уверены, что хотите удалить этот заказ?');">
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

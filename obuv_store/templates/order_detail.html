@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Заказ #{{ order.order_number }} - ООО "Обувь"{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-detail {
+        margin-top: 20px;
+    }
+    
+    .order-info {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+    
+    .order-info h3 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+    
+    .info-row {
+        display: flex;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .info-label {
+        flex: 0 0 200px;
+        font-weight: bold;
+        color: #666;
+    }
+    
+    .info-value {
+        flex: 1;
+        color: #333;
+    }
+    
+    .status-new {
+        background-color: #fff3cd;
+        color: #856404;
+        padding: 5px 15px;
+        border-radius: 15px;
+        font-size: 14px;
+    }
+    
+    .status-completed {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 5px 15px;
+        border-radius: 15px;
+        font-size: 14px;
+    }
+    
+    .items-section {
+        margin-top: 30px;
+    }
+    
+    .items-section h3 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+    
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .items-table th,
+    .items-table td {
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+    
+    .items-table th {
+        background-color: {{ colors.secondary_bg }};
+        font-weight: bold;
+    }
+    
+    .items-table tr:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .actions {
+        margin-top: 30px;
+        display: flex;
+        gap: 15px;
+    }
+    
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #666;
+        text-decoration: none;
+    }
+    
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('orders') }}" class="back-link">← Назад к списку заказов</a>
+
+<div class="order-detail">
+    <div class="order-info">
+        <h3>Информация о заказе #{{ order.order_number }}</h3>
+        
+        <div class="info-row">
+            <div class="info-label">Клиент:</div>
+            <div class="info-value">{{ order.user_name }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Дата заказа:</div>
+            <div class="info-value">{{ order.order_date }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Дата доставки:</div>
+            <div class="info-value">{{ order.delivery_date or 'Не указана' }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Пункт выдачи:</div>
+            <div class="info-value">{{ order.pickup_address }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Код для получения:</div>
+            <div class="info-value">{{ order.code }}</div>
+        </div>
+        
+        <div class="info-row">
+            <div class="info-label">Статус:</div>
+            <div class="info-value">
+                {% if order.status_name == 'Новый' %}
+                    <span class="status-new">{{ order.status_name }}</span>
+                {% else %}
+                    <span class="status-completed">{{ order.status_name }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="items-section">
+        <h3>Позиции заказа</h3>
+        
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Артикул</th>
+                    <th>Наименование</th>
+                    <th>Количество</th>
+                    <th>Цена за ед.</th>
+                    <th>Скидка</th>
+                    <th>Итого</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.article }}</td>
+                    <td>{{ item.product_name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ "%.2f"|format(item.price) }} ₽</td>
+                    <td>{{ item.discount }}%</td>
+                    <td>{{ "%.2f"|format(item.quantity * item.price * (100 - item.discount) / 100) }} ₽</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="actions">
+        <a href="{{ url_for('orders') }}" class="btn btn-secondary">Назад</a>
+        {% if user_role == 'Администратор' %}
+        <a href="{{ url_for('edit_order', order_id=order.id) }}" class="btn btn-primary">Редактировать</a>
+        <form method="POST" action="{{ url_for('delete_order', order_id=order.id) }}" style="display: inline;"
+              onsubmit="return confirm('Вы уверены, что хотите удалить этот заказ?');">
+            <button type="submit" class="btn btn-danger">Удалить</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
